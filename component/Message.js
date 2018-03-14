@@ -1,5 +1,11 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, Image} from 'react-native';
+import {
+    StyleSheet,
+    View,
+    Text,
+    Image
+} from 'react-native';
+import TitleBar from './widget/TitleBar'
 
 class Message extends Component {
     static navigationOptions = ({navigation}) => {
@@ -23,7 +29,7 @@ class Message extends Component {
 
     render() {
         return <View style={styles.container}>
-            <Text>消息页</Text>
+            <TitleBar title={'消息'}/>
         </View>
     }
 
@@ -32,8 +38,6 @@ class Message extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: '#F5FCFF',
     },
     imageSize: {

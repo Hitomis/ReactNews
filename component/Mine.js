@@ -1,12 +1,18 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, Image} from 'react-native';
+import {
+    StyleSheet,
+    View,
+    Text,
+    Image
+} from 'react-native';
+import TitleBar from './widget/TitleBar'
 
 class Mine extends Component {
-    static navigationOptions = ({navigation})=>{
+    static navigationOptions = ({navigation}) => {
         return {
             header: null,
             tabBarLabel: '我的',
-            tabBarIcon: ({ tintColor,focused }) => (
+            tabBarIcon: ({tintColor, focused}) => (
                 focused ?
                     <Image source={require("./assets/tab/tabbar_profile_highlighted.png")} style={styles.imageSize}/>
                     :
@@ -23,7 +29,7 @@ class Mine extends Component {
 
     render() {
         return <View style={styles.container}>
-            <Text>个人页</Text>
+            <TitleBar title={'我的'}/>
         </View>
     }
 
@@ -32,8 +38,6 @@ class Mine extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: '#F5FCFF',
     },
     imageSize: {

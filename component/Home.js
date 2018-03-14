@@ -1,10 +1,16 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, Image} from 'react-native';
+import {
+    StyleSheet,
+    View,
+    Text,
+    Image
+} from 'react-native';
+import TitleBar from './widget/TitleBar'
 
 class Home extends Component {
     static navigationOptions = ({navigation}) => {
         return {
-            header: null,
+            header:null,
             tabBarLabel: '首页',
             tabBarIcon: ({tintColor, focused}) => (
                 focused ?
@@ -22,7 +28,7 @@ class Home extends Component {
     render() {
         const {navigate} = this.props.navigation;
         return <View style={styles.container}>
-            <Text>首页</Text>
+            <TitleBar title={'主页'}/>
         </View>;
     }
 
@@ -31,8 +37,6 @@ class Home extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: '#F5FCFF',
     },
     imageSize: {

@@ -1,5 +1,11 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Text, Image} from 'react-native';
+import {
+    StyleSheet,
+    View,
+    Text,
+    Image
+} from 'react-native';
+import TitleBar from './widget/TitleBar'
 
 class Find extends Component {
     static navigationOptions = ({navigation}) => {
@@ -22,7 +28,7 @@ class Find extends Component {
 
     render() {
         return <View style={styles.container}>
-            <Text>发现页</Text>
+            <TitleBar title={'发现'}/>
         </View>
     }
 
@@ -31,8 +37,6 @@ class Find extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: '#F5FCFF',
     },
     imageSize: {

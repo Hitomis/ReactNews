@@ -5,7 +5,8 @@ import {
     Text,
     Image,
     SectionList,
-    Dimensions
+    Dimensions,
+    TouchableOpacity
 } from 'react-native';
 import {
     gankHistoryDay,
@@ -45,39 +46,54 @@ class Home extends Component {
     }
 
     renderHeader() {
+        TouchableOpacity
         return (<View>
-            <Text style={styles.section}>{this.state.girlImg.type}</Text>
-            <Image source={{uri: `${this.state.girlImg.url}`}} style={styles.girlImage}/>
+            <TouchableOpacity onPress={() => {
+                const {navigate} = this.props.navigation;
+                navigate("GankDetails", {details: this.state.girlImage});
+            }}>
+                <Text style={styles.section}>{this.state.girlImg.type}</Text>
+                <Image source={{uri: `${this.state.girlImg.url}`}} style={styles.girlImage}/>
+            </TouchableOpacity>
         </View>);
     }
 
     renderFooter() {
         return (<View>
-            <Text style={styles.section}>{this.state.restVideo.type}</Text>
-            <Text style={styles.restVideoDesc}>{this.state.restVideo.desc}</Text>
-            <View style={styles.restVideoInfo}>
-                <Text style={styles.restInfoLeft}>{this.state.restVideo.createdAt}</Text>
-                <Text style={styles.restInfoRight}>{this.state.restVideo.who}</Text>
-            </View>
-        </View>)
-    }
+            <TouchableOpacity onPress={() => {
 
-    renderSectionHeader(sectionData) {
-        return <Text style={styles.section}>{sectionData.title}</Text>;
+            }}>
+                <Text style={styles.section}>{this.state.restVideo.type}</Text>
+                <Text style={styles.restVideoDesc}>{this.state.restVideo.desc}</Text>
+                <View style={styles.restVideoInfo}>
+                    <Text style={styles.restInfoLeft}>{this.state.restVideo.createdAt}</Text>
+                    <Text style={styles.restInfoRight}>{this.state.restVideo.who}</Text>
+                </View>
+            </TouchableOpacity>
+        </View>)
     }
 
     renderCommonContent(item) {
-        console.log('==============', item);
         return (<View style={styles.contentContainer}>
-            <Text style={styles.contentDesc}>{item.item.desc}</Text>
-            <Text style={styles.contentAuthor}>—— {item.item.who == null ? 'none' : item.item.who}</Text>
-            {
-                item.item.images != null
-                    ? <Image source={{uri: `${item.item.images[0]}`}} style={styles.contentImg}/>
-                    : null
-            }
-            <View style={styles.contentDivider}/>
+            <TouchableOpacity onPress={() => {
+                const {navigate} = this.props.navigation;
+                navigate("GankDetails", {details: item.item});
+            }}>
+                <Text style={styles.contentDesc}>{item.item.desc}</Text>
+                <Text style={styles.contentAuthor}>—— {item.item.who == null ? 'none' : item.item.who}</Text>
+                {
+                    item.item.images != null
+                        ? <Image source={{uri: `${item.item.images[0]}`}} style={styles.contentImg}/>
+                        : null
+                }
+                <View style={styles.contentDivider}/>
+            </TouchableOpacity>
         </View>)
+    }
+
+
+    renderSectionHeader(sectionData) {
+        return <Text style={styles.section}>{sectionData.title}</Text>;
     }
 
     renderContent() {

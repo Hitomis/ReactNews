@@ -7,6 +7,7 @@ import {
 import {StackNavigator, TabNavigator,} from 'react-navigation';
 
 import Home from './Home'
+import GankDetails from './GankDetails'
 import Message from './Message'
 import Find from './Find'
 import Mine from './Mine'
@@ -71,6 +72,9 @@ const TabContainer = TabNavigator(
 const AppNavigator = StackNavigator({
     Main: {
         screen: TabContainer
+    },
+    GankDetails: {
+        screen: GankDetails
     },
 });
 

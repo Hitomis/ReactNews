@@ -4,7 +4,7 @@ import {
     View,
     Text,
     Image,
-    ScrollView,
+    SectionList,
     Dimensions
 } from 'react-native';
 import {
@@ -14,15 +14,6 @@ import {
 import TitleBar from './widget/TitleBar'
 
 const width = Dimensions.get('window').width;
-
-class ItemContent extends Component {
-    render() {
-        return <View>
-            <Text>
-            </Text>
-        </View>
-    }
-}
 
 class Home extends Component {
     static navigationOptions = ({navigation}) => {
@@ -41,19 +32,98 @@ class Home extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            girlImgUrl: '',
-            iosData: [],
+            homeDataList: [],
+            girlImg: {},
+            restVideo: {},
             androidData: [],
+            iosData: [],
+            frontEndData: [],
+            appData: [],
+            extData: [],
+            randRecoData: [],
         };
+    }
+
+    renderHeader() {
+        return (<View>
+            <Text style={styles.section}>{this.state.girlImg.type}</Text>
+            <Image source={{uri: `${this.state.girlImg.url}`}} style={styles.girlImage}/>
+        </View>);
+    }
+
+    renderFooter() {
+        return (<View>
+            <Text style={styles.section}>{this.state.restVideo.type}</Text>
+            <Text style={styles.restVideoDesc}>{this.state.restVideo.desc}</Text>
+            <View style={styles.restVideoInfo}>
+                <Text style={styles.restInfoLeft}>{this.state.restVideo.createdAt}</Text>
+                <Text style={styles.restInfoRight}>{this.state.restVideo.who}</Text>
+            </View>
+        </View>)
+    }
+
+    renderSectionHeader(sectionData) {
+        return <Text style={styles.section}>{sectionData.title}</Text>;
+    }
+
+    renderCommonContent(item) {
+        console.log('==============', item);
+        return (<View style={styles.contentContainer}>
+            <Text style={styles.contentDesc}>{item.item.desc}</Text>
+            <Text style={styles.contentAuthor}>—— {item.item.who == null ? 'none' : item.item.who}</Text>
+            {
+                item.item.images != null
+                    ? <Image source={{uri: `${item.item.images[0]}`}} style={styles.contentImg}/>
+                    : null
+            }
+            <View style={styles.contentDivider}/>
+        </View>)
+    }
+
+    renderContent() {
+        let androidContent = {
+            title: 'Android',
+            data: this.state.androidData,
+            renderItem: this.renderCommonContent
+        };
+        let iosContent = {
+            title: 'IOS',
+            data: this.state.iosData,
+            renderItem: this.renderCommonContent
+        };
+        let frontEndContent = {
+            title: '前端',
+            data: this.state.frontEndData,
+            renderItem: this.renderCommonContent
+        };
+        let appContent = {
+            title: 'App',
+            data: this.state.appData,
+            renderItem: this.renderCommonContent
+        };
+        let extContent = {
+            title: '拓展资源',
+            data: this.state.extData,
+            renderItem: this.renderCommonContent
+        };
+        let randReContent = {
+            title: '瞎推荐',
+            data: this.state.randRecoData,
+            renderItem: this.renderCommonContent
+        };
+        return [androidContent, iosContent, frontEndContent, appContent, extContent, randReContent];
     }
 
     render() {
         const {navigate} = this.props.navigation;
         return <View style={styles.container}>
             <TitleBar title={'主页'}/>
-            <ScrollView contentContainerStyle={styles.content}>
-                <Image source={{uri: `${this.state.girlImgUrl}`}} style={styles.girlImage}/>
-            </ScrollView>
+            <SectionList
+                ListHeaderComponent={this.renderHeader()}
+                ListFooterComponent={this.renderFooter()}
+                sections={this.renderContent()}
+                renderSectionHeader={({section}) => this.renderSectionHeader(section)}
+            />
         </View>;
     }
 
@@ -98,17 +168,47 @@ class Home extends Component {
     async loadHomeData() {
         let recentDayUrl = await this.queryGankPostHistoryDays();
         console.log('==================', recentDayUrl);
+
         let homeData = await this.queryGankHomeData(recentDayUrl);
-        let girImg;
+        console.log('==================', homeData);
+
+        let girImg, androidData, iosData, frontData, appData, extData, randData, restData;
         for (cate of homeData.cateList) {
             let data = homeData.dataList[cate];
             if (cate == '福利') {
-                girImg = data[0].url;
+                girImg = homeData.dataList[cate];
+            } else if (cate == 'Android') {
+                androidData = data;
+            } else if (cate == 'iOS') {
+                iosData = data;
+            } else if (cate == '前端') {
+                frontData = data;
+            } else if (cate == 'App') {
+                appData = data;
+            } else if (cate == '拓展资源') {
+                extData = data;
+            } else if (cate == '瞎推荐') {
+                randData = data;
+            } else if (cate == '休息视频') {
+                restData = homeData.dataList[cate];
             }
         }
+        ;
+
+        console.log('==================', girImg[0]);
+        console.log('==================', restData[0]);
+
         this.setState({
-            girlImgUrl: girImg
+            girlImg: girImg[0],
+            androidData: androidData,
+            iosData: iosData,
+            frontEndData: frontData,
+            appData: appData,
+            extData: extData,
+            randRecoData: randData,
+            restVideo: restData[0]
         });
+
     }
 
     componentDidMount() {
@@ -127,18 +227,58 @@ const styles = StyleSheet.create({
         height: 24
     },
     section: {
+        marginTop: 10,
         fontSize: 24,
         color: 'black',
-        marginLeft: 16,
-    },
-    content: {
-        flex: 1,
-        alignItems: 'center'
+        marginLeft: 10,
     },
     girlImage: {
-        marginTop: 10,
+        marginTop: 8,
         width: width,
         height: 200,
+    },
+    contentContainer: {
+        marginTop: 12,
+    },
+    contentDesc: {
+        margin: 12,
+        marginTop: 0,
+        fontSize: 16,
+        color: '#4183c4'
+    },
+    contentAuthor: {
+        alignSelf: 'flex-end',
+        marginRight: 12,
+        marginBottom: 12,
+    },
+    contentImg: {
+        alignSelf: 'center',
+        marginBottom: 12,
+        width: width - 24,
+        height: 180,
+    },
+    contentDivider: {
+        width: width,
+        height: 10,
+        backgroundColor: '#f5f5f5'
+    },
+    restVideoDesc: {
+        color: '#89abff',
+        fontSize: 18,
+        alignSelf: 'center',
+        margin: 15,
+    },
+    restVideoInfo: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingBottom: 12,
+    },
+    restInfoLeft: {
+        marginLeft: 12,
+    },
+    restInfoRight: {
+        marginRight: 12,
     }
 });
 

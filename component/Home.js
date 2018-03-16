@@ -46,11 +46,11 @@ class Home extends Component {
     }
 
     renderHeader() {
-        TouchableOpacity
         return (<View>
             <TouchableOpacity onPress={() => {
+                console.log('click header');
                 const {navigate} = this.props.navigation;
-                navigate("GankDetails", {details: this.state.girlImage});
+                navigate("GankDetails", {details: this.state.girlImg});
             }}>
                 <Text style={styles.section}>{this.state.girlImg.type}</Text>
                 <Image source={{uri: `${this.state.girlImg.url}`}} style={styles.girlImage}/>
@@ -61,7 +61,9 @@ class Home extends Component {
     renderFooter() {
         return (<View>
             <TouchableOpacity onPress={() => {
-
+                console.log('click footer');
+                const {navigate} = this.props.navigation;
+                navigate("GankDetails", {details: this.state.restVideo});
             }}>
                 <Text style={styles.section}>{this.state.restVideo.type}</Text>
                 <Text style={styles.restVideoDesc}>{this.state.restVideo.desc}</Text>
@@ -76,6 +78,7 @@ class Home extends Component {
     renderCommonContent(item) {
         return (<View style={styles.contentContainer}>
             <TouchableOpacity onPress={() => {
+                console.log('click Item');
                 const {navigate} = this.props.navigation;
                 navigate("GankDetails", {details: item.item});
             }}>
@@ -91,7 +94,6 @@ class Home extends Component {
         </View>)
     }
 
-
     renderSectionHeader(sectionData) {
         return <Text style={styles.section}>{sectionData.title}</Text>;
     }
@@ -100,32 +102,32 @@ class Home extends Component {
         let androidContent = {
             title: 'Android',
             data: this.state.androidData,
-            renderItem: this.renderCommonContent
+            renderItem: this.renderCommonContent.bind(this)
         };
         let iosContent = {
             title: 'IOS',
             data: this.state.iosData,
-            renderItem: this.renderCommonContent
+            renderItem: this.renderCommonContent.bind(this)
         };
         let frontEndContent = {
             title: '前端',
             data: this.state.frontEndData,
-            renderItem: this.renderCommonContent
+            renderItem: this.renderCommonContent.bind(this)
         };
         let appContent = {
             title: 'App',
             data: this.state.appData,
-            renderItem: this.renderCommonContent
+            renderItem: this.renderCommonContent.bind(this)
         };
         let extContent = {
             title: '拓展资源',
             data: this.state.extData,
-            renderItem: this.renderCommonContent
+            renderItem: this.renderCommonContent.bind(this)
         };
         let randReContent = {
             title: '瞎推荐',
             data: this.state.randRecoData,
-            renderItem: this.renderCommonContent
+            renderItem: this.renderCommonContent.bind(this)
         };
         return [androidContent, iosContent, frontEndContent, appContent, extContent, randReContent];
     }

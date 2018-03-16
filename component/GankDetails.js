@@ -6,25 +6,34 @@ import {
     Image,
     WebView
 } from 'react-native';
-import TitleBar from './widget/TitleBar'
 
 class GankDetails extends Component {
     static navigationOptions = ({navigation}) => {
         return {
             header: null,
+            isLoad: false,
         }
     }
 
     constructor(props) {
         super(props)
+        this.state = {
+            details: this.props.navigation.state.params.details,
+        };
+        console.log('details info:', this.state.details);
     }
 
     render() {
         return <View style={styles.container}>
-            <TitleBar title={'详情页'}/>
             <WebView
+                mediaPlaybackRequiresUserAction={false}
+                automaticallyAdjustContentInsets={true}
+                domStorageEnabled={true}
+                javaScriptEnabled={true}
+                scalesPageToFit={true}
+                startInLoadingState={true}
                 style={styles.webView}
-                source={}
+                source={{uri: `${this.state.details.url}`}}
             />
         </View>
     }

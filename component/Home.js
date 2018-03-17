@@ -132,6 +132,8 @@ class Home extends Component {
         return [androidContent, iosContent, frontEndContent, appContent, extContent, randReContent];
     }
 
+    keyGenerator = (item) => item._id + new Date().valueOf();
+
     render() {
         const {navigate} = this.props.navigation;
         return <View style={styles.container}>
@@ -141,6 +143,7 @@ class Home extends Component {
                 ListFooterComponent={this.renderFooter()}
                 sections={this.renderContent()}
                 renderSectionHeader={({section}) => this.renderSectionHeader(section)}
+                keyExtractor={this.keyGenerator}
             />
         </View>;
     }

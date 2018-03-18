@@ -59,20 +59,18 @@ class Home extends Component {
     }
 
     renderFooter() {
-        return (<View>
-            <TouchableOpacity onPress={() => {
-                console.log('click footer');
-                const {navigate} = this.props.navigation;
-                navigate("GankDetails", {details: this.state.restVideo});
-            }}>
-                <Text style={styles.section}>{this.state.restVideo.type}</Text>
-                <Text style={styles.restVideoDesc}>{this.state.restVideo.desc}</Text>
-                <View style={styles.restVideoInfo}>
-                    <Text style={styles.restInfoLeft}>{this.state.restVideo.createdAt}</Text>
-                    <Text style={styles.restInfoRight}>{this.state.restVideo.who}</Text>
-                </View>
-            </TouchableOpacity>
-        </View>)
+        return <TouchableOpacity onPress={() => {
+            console.log('click footer');
+            const {navigate} = this.props.navigation;
+            navigate("GankDetails", {details: this.state.restVideo});
+        }}>
+            <Text style={styles.section}>{this.state.restVideo.type}</Text>
+            <Text style={styles.restVideoDesc}>{this.state.restVideo.desc}</Text>
+            <View style={styles.restVideoInfo}>
+                <Text>{this.state.restVideo.createdAt}</Text>
+                <Text>{this.state.restVideo.who}</Text>
+            </View>
+        </TouchableOpacity>
     }
 
     renderCommonContent(item) {
@@ -89,7 +87,6 @@ class Home extends Component {
                         ? <Image source={{uri: `${item.item.images[0]}`}} style={styles.contentImg}/>
                         : null
                 }
-                <View style={styles.contentDivider}/>
             </TouchableOpacity>
         </View>)
     }
@@ -134,6 +131,10 @@ class Home extends Component {
 
     keyGenerator = (item) => item._id + new Date().valueOf();
 
+    homeListDivider = () => <View style={styles.contentDivider}/>;
+
+    homeSectionListDivider = () => <View style={styles.sectionDivider}/>
+
     render() {
         const {navigate} = this.props.navigation;
         return <View style={styles.container}>
@@ -143,6 +144,8 @@ class Home extends Component {
                 ListFooterComponent={this.renderFooter()}
                 sections={this.renderContent()}
                 renderSectionHeader={({section}) => this.renderSectionHeader(section)}
+                ItemSeparatorComponent={this.homeListDivider}
+                SectionSeparatorComponent={this.homeSectionListDivider}
                 keyExtractor={this.keyGenerator}
             />
         </View>;
@@ -155,7 +158,6 @@ class Home extends Component {
                     return response.json();
                 })
                 .then((responseJson) => {
-                    let flag;
                     let {error, results: resultDays} = responseJson;
                     let dateArray = resultDays[0].split('-');
                     let url = gankHomeList;
@@ -283,6 +285,11 @@ const styles = StyleSheet.create({
         height: 10,
         backgroundColor: '#f5f5f5'
     },
+    sectionDivider: {
+        width: width,
+        height: 1,
+        backgroundColor: '#f5f5f5',
+    },
     restVideoDesc: {
         color: '#89abff',
         fontSize: 18,
@@ -294,13 +301,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingBottom: 12,
+        paddingLeft: 12,
+        paddingRight: 12,
     },
-    restInfoLeft: {
-        marginLeft: 12,
-    },
-    restInfoRight: {
-        marginRight: 12,
-    }
 });
 
 

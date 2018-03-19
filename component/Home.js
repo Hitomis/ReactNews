@@ -136,7 +136,6 @@ class Home extends Component {
     homeSectionListDivider = () => <View style={styles.sectionDivider}/>
 
     render() {
-        const {navigate} = this.props.navigation;
         return <View style={styles.container}>
             <TitleBar title={'主页'}/>
             <SectionList

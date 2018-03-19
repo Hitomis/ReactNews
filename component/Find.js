@@ -6,7 +6,8 @@ import {
     Image,
     FlatList,
     TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    ToastAndroid
 } from 'react-native';
 import TitleBar from './widget/TitleBar'
 import {gankSearchList} from './util/Cons'
@@ -25,19 +26,22 @@ class Find extends Component {
         }
     }
 
+    currPage = 1;
+    keyword = '';
+    onEndReachedCalledDuringMomentum = false;
+
     constructor(props) {
         super(props);
         this.state = {
-            keyword: '',
-            currPage: 1,
             searchResult: [],
+            searchBorder: '#aeb0bf'
         };
     }
 
     render() {
         return <View style={styles.container}>
             <TitleBar title={'发现'}/>
-            <View style={styles.searchView}>
+            <View style={[styles.searchView, {borderColor: this.state.searchBorder}]} >
                 <Image
                     style={styles.searchIcon}
                     source={require('./assets/tab/tabbar_discover.png')}/>
@@ -47,18 +51,33 @@ class Find extends Component {
                     returnKeyType='search'
                     underlineColorAndroid='transparent'
                     onChangeText={(text) => {
-                        this.setState({
-                            keyword: text
-                        });
+                        this.keyword = text;
                     }}
                     onSubmitEditing={(event) => {
-                        this.searchKeyword();
-                    }}
-                    onFocu={() => {
+                        // 每次重新搜索，需要将当前页面重置为第一页
+                        this.currPage = 1;
+                        this.searchKeyword()
+                            .then((resultData) => {
+                                console.log('find search result', resultData);
+                                if (resultData === undefined || resultData.length == 0) {
+                                    ToastAndroid.show('没有相关信息', ToastAndroid.SHORT);
+                                } else {
+                                    this.setState({
+                                        searchResult: resultData
+                                    });
+                                }
 
+                            })
+                    }}
+                    onFocus={() => {
+                        this.setState({
+                            searchBorder: '#89abff'
+                        });
                     }}
                     onBlur={() => {
-
+                        this.setState({
+                            searchBorder: '#aeb0bf'
+                        });
                     }}
                 />
             </View>
@@ -67,11 +86,14 @@ class Find extends Component {
                 renderItem={this.renderSearchItem}
                 keyExtractor={this.keyGenerator}
                 ItemSeparatorComponent={this.searchListDivider}
-                // onEndReachedThreshold={0.5}
-                // onEndReached={this.onLoadMore}
+                onScroll={this.onFlatListScroll}
+                onEndReachedThreshold={0.01}
+                onEndReached={this.onLoadMore}
             />
         </View>
     }
+
+    onFlatListScroll = () => this.onEndReachedCalledDuringMomentum = true
 
     searchListDivider = () => <View style={styles.listDivider}/>
 
@@ -79,7 +101,7 @@ class Find extends Component {
         return <TouchableOpacity
             style={styles.itemContainer}
             onPress={() => {
-                console.log('click', item.item.url);
+                console.log('find item click', item.item.url);
                 const {navigate} = this.props.navigation;
                 navigate("GankDetails", {details: item.item});
             }}>
@@ -95,41 +117,39 @@ class Find extends Component {
     keyGenerator = (item) => item.ganhuo_id + new Date().valueOf();
 
     onLoadMore = () => {
-        this.setState({
-            currPage: this.state.currPage++
-        });
-        this.searchKeyword(true);
+        if (this.onEndReachedCalledDuringMomentum) {
+            this.currPage++;
+            this.searchKeyword()
+                .then((resultData) => {
+                    console.log('find load more', resultData);
+                    if (resultData === undefined || resultData.length == 0) {
+                        ToastAndroid.show('没有更多的信息了', ToastAndroid.SHORT);
+                    } else this.setState({
+                        searchResult: [...this.state.searchResult, ...resultData]
+                    })
+                })
+        }
     };
 
-    async searchKeyword(loadMore = false) {
+    async searchKeyword() {
+        if (this.keyword === '') return;
         let resultData = await this.searchGankData();
-        if (resultData === undefined || resultData.length == 0) return;
-        if (loadMore) {
-            this.setState({
-                searchResult: [...this.state.searchResult, resultData]
-            })
-        } else {
-            this.setState({
-                searchResult: resultData
-            });
-        }
-
+        return resultData;
     }
 
     searchGankData() {
         let url = gankSearchList;
-        url = url.replace('{query}', this.state.keyword);
+        url = url.replace('{query}', this.keyword);
         url = url.replace('{category}', 'all');
         url = url.replace('{count}', 10);
-        url = url.replace('{page}', this.state.currPage);
-        console.log('find', url);
+        url = url.replace('{page}', this.currPage);
+        console.log('find search url', url);
         return new Promise((resolve, reject) => {
             fetch(url)
                 .then((response) => {
                     return response.json();
                 })
                 .then((responseData) => {
-                    console.log('find', responseData)
                     let {count, error, results} = responseData;
                     resolve(results);
                 })

@@ -7,9 +7,11 @@ import {
     FlatList,
     TextInput,
     TouchableOpacity,
-    ToastAndroid
+    ToastAndroid,
+    DeviceEventEmitter
 } from 'react-native';
 import TitleBar from './widget/TitleBar'
+import PullLayout from './widget/PullLayout'
 import {gankSearchList} from './util/Cons'
 
 class Find extends Component {
@@ -36,12 +38,22 @@ class Find extends Component {
             searchResult: [],
             searchBorder: '#aeb0bf'
         };
+        this.KEY = "gank_find";
+    }
+
+    componentDidMount() {
+        DeviceEventEmitter.addListener(this.KEY + "onLoadMoreReleased", this.loadMoreReleased);
+    }
+
+    componentWillUnmount() {
+        DeviceEventEmitter.removeAllListeners();
+        this.pullLayout && this.pullLayout.finishRefresh(this.KEY);
     }
 
     render() {
         return <View style={styles.container}>
             <TitleBar title={'发现'}/>
-            <View style={[styles.searchView, {borderColor: this.state.searchBorder}]} >
+            <View style={[styles.searchView, {borderColor: this.state.searchBorder}]}>
                 <Image
                     style={styles.searchIcon}
                     source={require('./assets/tab/tabbar_discover.png')}/>
@@ -81,15 +93,24 @@ class Find extends Component {
                     }}
                 />
             </View>
-            <FlatList
-                data={this.state.searchResult}
-                renderItem={this.renderSearchItem}
-                keyExtractor={this.keyGenerator}
-                ItemSeparatorComponent={this.searchListDivider}
-                onScroll={this.onFlatListScroll}
-                onEndReachedThreshold={0.01}
-                onEndReached={this.onLoadMore}
-            />
+            <PullLayout
+                Key={this.KEY}
+                ref={(pull) => {
+                    this.pullLayout = pull
+                }}
+                EnableRefresh={false}
+                EnableLoadMore={true}
+            >
+                <FlatList
+                    data={this.state.searchResult}
+                    renderItem={this.renderSearchItem}
+                    keyExtractor={this.keyGenerator}
+                    ItemSeparatorComponent={this.searchListDivider}
+                    // onScroll={this.onFlatListScroll}
+                    // onEndReachedThreshold={0.01}
+                    // onEndReached={this.onLoadMore}
+                />
+            </PullLayout>
         </View>
     }
 
@@ -116,20 +137,36 @@ class Find extends Component {
 
     keyGenerator = (item) => item.ganhuo_id + new Date().valueOf();
 
-    onLoadMore = () => {
-        if (this.onEndReachedCalledDuringMomentum) {
-            this.currPage++;
-            this.searchKeyword()
-                .then((resultData) => {
-                    console.log('find load more', resultData);
-                    if (resultData === undefined || resultData.length == 0) {
-                        ToastAndroid.show('没有更多的信息了', ToastAndroid.SHORT);
-                    } else this.setState({
-                        searchResult: [...this.state.searchResult, ...resultData]
-                    })
+    loadMoreReleased = async (params) => {
+        console.log('loadMore.....', params);
+
+        this.currPage++;
+        this.searchKeyword()
+            .then((resultData) => {
+                console.log('find load more', resultData);
+                if (resultData === undefined || resultData.length == 0) {
+                    ToastAndroid.show('没有更多的信息了', ToastAndroid.SHORT);
+                } else this.setState({
+                    searchResult: [...this.state.searchResult, ...resultData]
                 })
-        }
+                this.pullLayout && this.pullLayout.finishLoadMore(this.KEY);
+            })
     };
+
+    // onLoadMore = () => {
+    //     if (this.onEndReachedCalledDuringMomentum) {
+    //         this.currPage++;
+    //         this.searchKeyword()
+    //             .then((resultData) => {
+    //                 console.log('find load more', resultData);
+    //                 if (resultData === undefined || resultData.length == 0) {
+    //                     ToastAndroid.show('没有更多的信息了', ToastAndroid.SHORT);
+    //                 } else this.setState({
+    //                     searchResult: [...this.state.searchResult, ...resultData]
+    //                 })
+    //             })
+    //     }
+    // };
 
     async searchKeyword() {
         if (this.keyword === '') return;
@@ -178,6 +215,7 @@ const styles = StyleSheet.create({
         paddingRight: 8,
         alignItems: 'center',
         marginTop: 5,
+        marginBottom: 5,
         marginLeft: 10,
         marginRight: 10,
     },

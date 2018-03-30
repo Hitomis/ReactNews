@@ -1,4 +1,4 @@
-package com.reactnews.view;
+package com.reactnews.view.refresh;
 
 import android.graphics.Color;
 import android.support.annotation.ColorInt;

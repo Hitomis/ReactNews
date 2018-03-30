@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import {
     gankHistoryDay,
-    gankHomeList
+    gankHomeList,
+    GankType
 } from './util/Cons'
 import TitleBar from './widget/TitleBar'
 
@@ -158,13 +159,17 @@ class Home extends Component {
                 })
                 .then((responseJson) => {
                     let {error, results: resultDays} = responseJson;
-                    let dateArray = resultDays[0].split('-');
-                    let url = gankHomeList;
-                    url = url.replace('{yyyy}', dateArray[0]);
-                    url = url.replace('{MM}', dateArray[1]);
-                    url = url.replace('{dd}', dateArray[2]);
-                    console.log(url);
-                    resolve(url);
+                    if (!error) {
+                        let dateArray = resultDays[0].split('-');
+                        let url = gankHomeList;
+                        url = url.replace('{yyyy}', dateArray[0]);
+                        url = url.replace('{MM}', dateArray[1]);
+                        url = url.replace('{dd}', dateArray[2]);
+                        console.log(url);
+                        resolve(url);
+                    } else {
+                        reject(error);
+                    }
                 })
                 .catch((error) => {
                     reject(error)
@@ -197,21 +202,21 @@ class Home extends Component {
         let girImg, androidData, iosData, frontData, appData, extData, randData, restData;
         for (cate of homeData.cateList) {
             let data = homeData.dataList[cate];
-            if (cate == '福利') {
+            if (cate === GankType.girl) {
                 girImg = homeData.dataList[cate];
-            } else if (cate == 'Android') {
+            } else if (cate === GankType.android) {
                 androidData = data;
-            } else if (cate == 'iOS') {
+            } else if (cate === GankType.ios) {
                 iosData = data;
-            } else if (cate == '前端') {
+            } else if (cate === GankType.frontEnd) {
                 frontData = data;
-            } else if (cate == 'App') {
+            } else if (cate === GankType.app) {
                 appData = data;
-            } else if (cate == '拓展资源') {
+            } else if (cate === GankType.extRes) {
                 extData = data;
-            } else if (cate == '瞎推荐') {
+            } else if (cate === GankType.randRec) {
                 randData = data;
-            } else if (cate == '休息视频') {
+            } else if (cate === GankType.restVideo) {
                 restData = homeData.dataList[cate];
             }
         }

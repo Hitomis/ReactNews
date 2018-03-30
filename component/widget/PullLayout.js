@@ -39,7 +39,7 @@ export default class App extends Component {
                 style={[styles.pullLayout, this.props.style]}
                 EnableOverScrollDrag={true}
                 EnableOverScrollBounce={false}
-                DisableContentWhenRefresh={false}
+                DisableContentWhenRefresh={true}
                 {...this.props}
             >
                 <View style={{flex: 1}}>

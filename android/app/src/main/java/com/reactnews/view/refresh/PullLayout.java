@@ -1,4 +1,4 @@
-package com.reactnews.view;
+package com.reactnews.view.refresh;
 
 import android.graphics.Color;
 import android.util.Log;
@@ -91,7 +91,6 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
                 canRefresh = false;
                 this.dispatchEvent(reactContext, refreshLayout, "onRefreshReleased", params, false);
             }
-
         }
     }
 

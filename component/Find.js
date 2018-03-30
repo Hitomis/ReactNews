@@ -29,6 +29,7 @@ class Find extends Component {
     }
 
     currPage = 1;
+    count = 10;
     keyword = '';
     onEndReachedCalledDuringMomentum = false;
 
@@ -146,9 +147,11 @@ class Find extends Component {
                 console.log('find load more', resultData);
                 if (resultData === undefined || resultData.length == 0) {
                     ToastAndroid.show('没有更多的信息了', ToastAndroid.SHORT);
-                } else this.setState({
-                    searchResult: [...this.state.searchResult, ...resultData]
-                })
+                } else {
+                    this.setState({
+                        searchResult: [...this.state.searchResult, ...resultData]
+                    })
+                }
                 this.pullLayout && this.pullLayout.finishLoadMore(this.KEY);
             })
     };
@@ -178,7 +181,7 @@ class Find extends Component {
         let url = gankSearchList;
         url = url.replace('{query}', this.keyword);
         url = url.replace('{category}', 'all');
-        url = url.replace('{count}', 10);
+        url = url.replace('{count}', this.count);
         url = url.replace('{page}', this.currPage);
         console.log('find search url', url);
         return new Promise((resolve, reject) => {
@@ -188,7 +191,11 @@ class Find extends Component {
                 })
                 .then((responseData) => {
                     let {count, error, results} = responseData;
-                    resolve(results);
+                    if (!error) {
+                        resolve(results);
+                    } else {
+                        reject(error);
+                    }
                 })
                 .catch((error) => {
                     reject(error);

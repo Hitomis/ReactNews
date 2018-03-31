@@ -1,6 +1,7 @@
 package com.reactnews.view.refresh;
 
 import android.graphics.Color;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
@@ -18,19 +19,22 @@ import com.scwang.smartrefresh.layout.footer.ClassicsFooter;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
 public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
 
-    static final String TAG = "HeaderLayout";
-    static final int FinishRefresh = 1;
-    static final int FinishLoadMore = 1 << 1;
-    Header header;
-    String Key;
-    boolean canRefresh = true;
-    boolean canLoad = true;
+    private static final String TAG = "PullLayout";
+    private static final int FinishRefresh = 1;
+    private static final int FinishLoadMore = 1 << 1;
+
+    private Header header;
+    private Map<SmartRefreshLayout, String> keyMap = new HashMap<>();
+    private boolean canRefresh = true;
+    private boolean canLoad = true;
+    private int requestTimeOut = 8000;
 
     @Override
     public String getName() {
@@ -42,7 +46,6 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
         header = new Header(reactContext);
         SmartRefreshLayout refreshLayout = new SmartRefreshLayout(reactContext);
         refreshLayout.setBackgroundColor(Color.parseColor("#444444"));
-        refreshLayout.setTag("PullLayout");
         refreshLayout.setRefreshHeader(header);
         refreshLayout.setEnableLoadmoreWhenContentNotFull(true);
         refreshLayout.setEnableLoadmore(false);//是否启用上拉加载功能
@@ -118,15 +121,15 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
             else
                 refreshlayout.finishLoadmore();
         } else {
-            Log.i(TAG, "发送消息事件 " + "refreshlayout View id : " + refreshlayout.getId());
-            Log.i(TAG, "key:" + this.Key + eventName);
+            String key = keyMap.get(refreshlayout);
+            Log.i(TAG, "发送消息事件 " + "id: " + refreshlayout.getId() + " | key: " + key + eventName);
             // 原生模块发送事件
             reactContext
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit(this.Key + eventName, params);
+                    .emit(key + eventName, params);
+            new Handler().postDelayed(new FinishRequestRunnable(refreshlayout), requestTimeOut);
         }
     }
-
 
     @Nullable
     @Override
@@ -150,19 +153,19 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
     @Override
     public void receiveCommand(SmartRefreshLayout root, int commandId, @Nullable ReadableArray args) {
         super.receiveCommand(root, commandId, args);
-        Log.i(TAG, args.getString(0));
         String key = args.getString(0);
+        String viewKey = keyMap.get(root);
         switch (commandId) {
             case FinishRefresh:
-                if (this.Key.equals(key)) {
+                if (viewKey.equals(key)) {
                     Log.i(TAG, "结束刷新");
                     root.finishRefresh();
                     canRefresh = true;
                 }
                 break;
             case FinishLoadMore:
-                if (this.Key.equals(key)) {
-                    Log.i(TAG, "结束加载");
+                if (viewKey.equals(key)) {
+                    Log.i(TAG, key + "结束加载");
                     root.finishLoadmore();
                     canLoad = true;
                 }
@@ -172,7 +175,7 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
 
     @ReactProp(name = "Key")
     public void setKey(final SmartRefreshLayout refreshLayout, final String Key) {
-        this.Key = Key;
+        keyMap.put(refreshLayout, Key);
     }
 
     @ReactProp(name = "HeaderText")
@@ -276,5 +279,32 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
         refreshLayout.setEnableNestedScroll(EnableNestedScroll);
     }
 
+    /**
+     * 设置请求超时时间
+     */
+    @ReactProp(name = "RequestTimeOut")
+    public void setRequestTimeOut(final SmartRefreshLayout refreshLayout, final int requestTimeOut) {
+        this.requestTimeOut = requestTimeOut;
+    }
 
+    private class FinishRequestRunnable implements Runnable {
+
+        private SmartRefreshLayout refreshLayout;
+
+        public FinishRequestRunnable(SmartRefreshLayout refreshlayout) {
+            this.refreshLayout = refreshlayout;
+        }
+
+        @Override
+        public void run() {
+            if (refreshLayout.isRefreshing()) {
+                Log.i(TAG, "请求超时，自动结束下拉刷新");
+                refreshLayout.finishRefresh();
+            }
+            if (refreshLayout.isLoading()) {
+                Log.i(TAG, "请求超时，自动结束上拉加载");
+                refreshLayout.finishLoadmore();
+            }
+        }
+    }
 }

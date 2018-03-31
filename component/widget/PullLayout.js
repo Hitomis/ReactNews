@@ -40,6 +40,7 @@ export default class App extends Component {
                 EnableOverScrollDrag={true}
                 EnableOverScrollBounce={false}
                 DisableContentWhenRefresh={true}
+                RequestTimeOut={10000}
                 {...this.props}
             >
                 <View style={{flex: 1}}>
@@ -74,4 +75,5 @@ PullLayout.propTypes = {
     DisableContentWhenRefresh: PropTypes.bool,//设置是否开启在刷新时候禁止操作内容视图
     EnablePureScrollMode: PropTypes.bool,//设置是否开启纯滚动模式
     EnableNestedScroll: PropTypes.bool,//设置是会否启用嵌套滚动功能（默认关闭+智能开启）
+    RequestTimeOut: PropTypes.number, // 设置多久会请求超时（上拉和下拉）
 };

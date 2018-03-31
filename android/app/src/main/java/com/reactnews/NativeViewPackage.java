@@ -24,4 +24,6 @@ public class NativeViewPackage implements ReactPackage {
         views.add(new MultiPage());
         return views;
     }
+
+
 }

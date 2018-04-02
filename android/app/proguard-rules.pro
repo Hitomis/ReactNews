@@ -55,7 +55,6 @@
 -dontwarn android.text.StaticLayout
 
 # okhttp
-
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class okhttp3.** { *; }
@@ -63,8 +62,14 @@
 -dontwarn okhttp3.**
 
 # okio
-
 -keep class sun.misc.Unsafe { *; }
 -dontwarn java.nio.file.*
 -dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 -dontwarn okio.**
+
+# Glide
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
+    **[] $VALUES;
+    public *;
+}

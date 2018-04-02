@@ -84,6 +84,7 @@ public class MultiPage extends SimpleViewManager<MultiRecyclerView> {
 
         @Override
         protected void convert(ViewHolder holder, Integer imgRes, int position) {
+            holder.getConvertView().setTag(position);
             ImageView ivImg = holder.getView(R.id.iv_img);
             ivImg.setLayoutParams(new LinearLayout.LayoutParams(contentSize, ViewGroup.LayoutParams.MATCH_PARENT));
             Glide.with(mContext).load(imgRes).into(ivImg);
@@ -96,7 +97,7 @@ public class MultiPage extends SimpleViewManager<MultiRecyclerView> {
         view.setOnCenterItemClickListener(new MultiRecyclerView.OnCenterItemClickListener() {
             @Override
             public void onCenterItemClick(View v) {
-                dispatchEvent(reactContext, "onCenterItemClick");
+                dispatchEvent(reactContext, "onCenterItemClick", v.getTag().toString());
             }
         });
     }
@@ -131,11 +132,12 @@ public class MultiPage extends SimpleViewManager<MultiRecyclerView> {
         }
     }
 
-    private void dispatchEvent(ThemedReactContext reactContext, String eventName) {
+    private void dispatchEvent(ThemedReactContext reactContext, String eventName, String index) {
         if (reactContext != null) {
 //            // native 发送事件到 js
             WritableMap event = Arguments.createMap();
             event.putString("from", "native");
+            event.putString("index", index);
 //            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
 //                    clickView.getId(),
 //                    "onCenterItemClick",

@@ -140,6 +140,7 @@ public class MultiRecyclerView extends RecyclerView implements View.OnClickListe
                 @Override
                 public void onClick(View v) {
                     View centerView = findViewAtCenter();
+                    currentCenterChildView = centerView;
                     if (centerView == v) {
                         if (centerItemClickListener != null)
                             centerItemClickListener.onCenterItemClick(v);
@@ -195,8 +196,9 @@ public class MultiRecyclerView extends RecyclerView implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (centerItemClickListener != null)
+        if (centerItemClickListener != null) {
             centerItemClickListener.onCenterItemClick(v);
+        }
     }
 
     public class CenterRunnable implements Runnable {
@@ -239,6 +241,10 @@ public class MultiRecyclerView extends RecyclerView implements View.OnClickListe
 
     public void setOnScrollListener(OnScrollListener listener) {
         onScrollListener = listener;
+    }
+
+    public View getCurrentCenterChildView() {
+        return currentCenterChildView;
     }
 
     public interface OnCenterItemClickListener {

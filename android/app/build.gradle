@@ -141,9 +141,9 @@ dependencies {
     compile 'com.android.support:appcompat-v7:26.0.0'
     compile "com.android.support:recyclerview-v7:26.0.0"
     compile "com.facebook.react:react-native:+"  // From node_modules
-    compile 'com.scwang.smartrefresh:SmartRefreshLayout:1.0.4-7'
+    compile 'com.github.bumptech.glide:glide:3.8.0'
     compile 'com.zhy:base-rvadapter:3.0.3'
-    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.scwang.smartrefresh:SmartRefreshLayout:1.0.4-7'
 }
 
 // Run this once to be able to run the application with BUCK

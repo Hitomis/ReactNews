@@ -8,13 +8,16 @@ import {
     TouchableOpacity,
     DeviceEventEmitter,
     ToastAndroid,
+    Dimensions,
 } from 'react-native';
 import TitleBar from './widget/TitleBar'
 import MultiPage from './widget/MultiPage'
 import Pulllayout from './widget/PullLayout'
-import {gankTypeList, GankType} from './util/Cons'
+import {GlideImage, ScaleType} from './widget/GlideImage'
+import {gankTypeList, GankType, getTypeValueByIndex} from './util/Cons'
 
 const typeImgSize = 60;
+const width = Dimensions.get('window').width;
 
 class Message extends Component {
     static navigationOptions = ({navigation}) => {
@@ -36,7 +39,7 @@ class Message extends Component {
         this.KEY = "gank_message";
         this.currPage = 1;
         this.count = 10;
-        this.gankType = GankType.android;
+        this.gankType = GankType.girl;
         this.state = ({
             typeResult: [],
         });
@@ -75,21 +78,17 @@ class Message extends Component {
     componentDidMount() {
         DeviceEventEmitter.addListener(this.KEY + "onCenterItemClick", this.onCenterItemClick);
         DeviceEventEmitter.addListener(this.KEY + "onLoadMoreReleased", this.loadMoreReleased);
-        this.loadGankDataByType(this.gankType)
-            .then((resultData) => {
-                console.log('type gank data', resultData);
-                this.setState({
-                    typeResult: resultData,
-                });
-            });
+        this.getGanDataFromServer();
     }
 
     componentWillUnmount() {
         DeviceEventEmitter.removeAllListeners();
     }
 
-    onCenterItemClick = () => {
-        console.log('onCenterItemClick');
+    onCenterItemClick = (event) => {
+        this.gankType = getTypeValueByIndex(parseInt(event.index));
+        this.currPage = 1;
+        this.getGanDataFromServer();
     }
 
     loadMoreReleased = async (params) => {
@@ -113,19 +112,28 @@ class Message extends Component {
     typeListDivider = () => <View style={styles.listDivider}/>
 
     renderTypeItem = (item) => {
-        return <TouchableOpacity
-            style={styles.itemContainer}
-            onPress={() => {
-                console.log('find item click', item.item.url);
-                const {navigate} = this.props.navigation;
-                navigate("GankDetails", {details: item.item});
-            }}>
-            <Text style={styles.resultContent}>{item.item.desc}</Text>
-            <View style={styles.extraView}>
-                <Text style={styles.createDate}>{item.item.publishedAt}</Text>
-                <Text style={styles.author}>{item.item.who}</Text>
-            </View>
-        </TouchableOpacity>
+        if (this.gankType == GankType.girl) {
+            return <GlideImage
+                style={styles.girlImage}
+                source={{uri: item.item.url}}
+                scaleType={ScaleType.CENTER_CROP}
+                targetSize={[width, 260]}
+            />
+        } else {
+            return <TouchableOpacity
+                style={styles.itemContainer}
+                onPress={() => {
+                    console.log('find item click', item.item.url);
+                    const {navigate} = this.props.navigation;
+                    navigate("GankDetails", {details: item.item});
+                }}>
+                <Text style={styles.resultContent}>{item.item.desc}</Text>
+                <View style={styles.extraView}>
+                    <Text style={styles.createDate}>{item.item.publishedAt}</Text>
+                    <Text style={styles.author}>{item.item.who}</Text>
+                </View>
+            </TouchableOpacity>
+        }
     }
 
     getGankData(typeGankUrl) {
@@ -154,6 +162,16 @@ class Message extends Component {
         url = url.replace('{page}', this.currPage);
         let typeGankData = await this.getGankData(url);
         return typeGankData;
+    }
+
+    getGanDataFromServer() {
+        this.loadGankDataByType(this.gankType)
+            .then((resultData) => {
+                console.log('type gank data', resultData);
+                this.setState({
+                    typeResult: resultData,
+                });
+            });
     }
 
 }
@@ -194,6 +212,10 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 6,
         backgroundColor: '#f5f5f5'
+    },
+    girlImage: {
+        width: '100%',
+        height: 260,
     }
 });
 

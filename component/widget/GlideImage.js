@@ -33,6 +33,8 @@ class App extends Component {
 
     processAttr() {
         let source = resolveAssetSource(this.props.source);
+        let placeholder = resolveAssetSource(this.props.placeholder);
+        let errorImg = resolveAssetSource(this.props.errorImg);
 
         if (source && source.uri === '') {
             console.warn('source.uri should not be an empty string');
@@ -57,8 +59,16 @@ class App extends Component {
             let config = {
                 source: source,
                 scaleType: this.props.scaleType,
-                targetSize: this.props.targetSize
+                targetSize: this.props.targetSize,
             };
+
+            if (placeholder && placeholder.uri) {
+                config.placeholder = placeholder;
+            }
+
+            if (errorImg && errorImg.uri) {
+                config.errorImg = errorImg;
+            }
 
             this.attr = merge(this.props, {
                 style,
@@ -72,12 +82,6 @@ class App extends Component {
         return <GlideImage
             ref={(glideImage) => {
                 this.glideImage = glideImage
-            }}
-            onLoadStart={() => {
-                console.log("GlideImage", '=========> onLoadStart')
-            }}
-            onLoadEnd={() => {
-                console.log("GlideImage", '=========> onLoadEnd')
             }}
             {...this.attr}
         />

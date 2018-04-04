@@ -117,7 +117,8 @@ class Message extends Component {
                 style={styles.girlImage}
                 source={{uri: item.item.url}}
                 scaleType={ScaleType.CENTER_CROP}
-                targetSize={[width, 260]}
+                placeholder={require('./assets/tab/tabbar_message_center.png')}
+                errorImg={require('./assets/tab/tabbar_message_center_highlighted.png')}
             />
         } else {
             return <TouchableOpacity

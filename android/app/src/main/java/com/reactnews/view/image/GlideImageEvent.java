@@ -22,7 +22,7 @@ public class GlideImageEvent extends Event<GlideImageEvent> {
     public static final int ON_LOAD_START = 3;
 
     private final int eventType;
-    private final String imageUri;
+    private final String eventMsg;
 
     @IntDef({ON_ERROR, ON_LOAD_END, ON_LOAD_START})
     @Retention(RetentionPolicy.SOURCE)
@@ -33,10 +33,10 @@ public class GlideImageEvent extends Event<GlideImageEvent> {
         this(viewId, eventType, null);
     }
 
-    public GlideImageEvent(int viewId, @ImageEventType int eventType, @Nullable String imageUri) {
+    public GlideImageEvent(int viewId, @ImageEventType int eventType, @Nullable String eventMsg) {
         super(viewId);
         this.eventType = eventType;
-        this.imageUri = imageUri;
+        this.eventMsg = eventMsg;
     }
 
     public static String eventNameForType(@ImageEventType int eventType) {
@@ -65,14 +65,10 @@ public class GlideImageEvent extends Event<GlideImageEvent> {
     @Override
     public void dispatch(RCTEventEmitter rctEventEmitter) {
         WritableMap eventData = null;
-
-        if (imageUri != null) {
+        if (eventMsg != null) {
             eventData = Arguments.createMap();
-            if (imageUri != null) {
-                eventData.putString("uri", imageUri);
-            }
+            eventData.putString("msg", eventMsg);
         }
-
         rctEventEmitter.receiveEvent(getViewTag(), getEventName(), eventData);
     }
 }

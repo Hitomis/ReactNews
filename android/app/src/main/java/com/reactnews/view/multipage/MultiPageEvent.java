@@ -1,10 +1,9 @@
-package com.reactnews.view.refresh;
+package com.reactnews.view.multipage;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.events.Event;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
-import com.reactnews.view.image.GlideImageEvent;
 
 import javax.annotation.Nullable;
 
@@ -12,29 +11,29 @@ import javax.annotation.Nullable;
  * Created by Hitomis on 2018/4/7 0007.
  */
 
-public class PullLayoutEvent extends Event<PullLayoutEvent> {
-    public static final int ON_REFRESH_RELEASED = 1;
-    public static final int ON_LOADMORE_RELEASED = 1 << 1;
+public class MultiPageEvent extends Event<MultiPageEvent> {
+    public static final int ON_SLIDE_CENTER = 1;
+    public static final int ON_CLICK_CENTER = 1 << 1;
 
     private int eventType;
     private String eventMsg;
 
     public static String eventNameForType(int eventType) {
         switch (eventType) {
-            case ON_REFRESH_RELEASED:
-                return "topRefreshReleased";
-            case ON_LOADMORE_RELEASED:
-                return "topLoadmoreReleased";
+            case ON_SLIDE_CENTER:
+                return "topSlideCenter";
+            case ON_CLICK_CENTER:
+                return "topClickCenter";
             default:
-                throw new IllegalStateException("Invalid pullLayou event: " + Integer.toString(eventType));
+                throw new IllegalStateException("Invalid multiPage event: " + Integer.toString(eventType));
         }
     }
 
-    public PullLayoutEvent(int viewId, int eventType) {
+    public MultiPageEvent(int viewId, int eventType) {
         this(viewId, eventType, null);
     }
 
-    public PullLayoutEvent(int viewId, int eventType, @Nullable String eventMsg) {
+    public MultiPageEvent(int viewId, int eventType, @Nullable String eventMsg) {
         super(viewId);
         this.eventType = eventType;
         this.eventMsg = eventMsg;

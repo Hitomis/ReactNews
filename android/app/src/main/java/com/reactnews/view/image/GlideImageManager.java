@@ -2,7 +2,6 @@ package com.reactnews.view.image;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.bumptech.glide.DrawableRequestBuilder;
@@ -159,8 +158,7 @@ public class GlideImageManager extends SimpleViewManager<GlideImageLayout> {
     }
 
     @Override
-    public @Nullable
-    Map getExportedCustomDirectEventTypeConstants() {
+    public @Nullable Map getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.of(
                 GlideImageEvent.eventNameForType(GlideImageEvent.ON_LOAD_START),
                 MapBuilder.of("registrationName", "onLoadStart"),

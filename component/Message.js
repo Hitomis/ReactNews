@@ -36,7 +36,6 @@ class Message extends Component {
 
     constructor(props) {
         super(props);
-        this.KEY = "gank_message";
         this.currPage = 1;
         this.count = 10;
         this.gankType = GankType.girl;
@@ -53,7 +52,7 @@ class Message extends Component {
                 ref={(multi) => {
                     this.multiLayout = multi;
                 }}
-                Key={this.KEY}
+                onClickCenter={this.onCenterItemClick}
                 ContentSize={typeImgSize}
             />
             <Pulllayout
@@ -78,18 +77,15 @@ class Message extends Component {
     }
 
     componentDidMount() {
-        DeviceEventEmitter.addListener(this.KEY + "onCenterItemClick", this.onCenterItemClick);
-        this.getGanDataFromServer();
+        this.getGankDataFromServer();
     }
 
-    componentWillUnmount() {
-        DeviceEventEmitter.removeAllListeners();
-    }
 
     onCenterItemClick = (event) => {
-        this.gankType = getTypeValueByIndex(parseInt(event.index));
+        console.log(this.props);
+        this.gankType = getTypeValueByIndex(parseInt(event.msg));
         this.currPage = 1;
-        this.getGanDataFromServer();
+        this.getGankDataFromServer();
     }
 
     loadMoreReleased = async (params) => {
@@ -166,7 +162,7 @@ class Message extends Component {
         return typeGankData;
     }
 
-    getGanDataFromServer() {
+    getGankDataFromServer() {
         this.loadGankDataByType(this.gankType)
             .then((resultData) => {
                 console.log('type gank data', resultData);

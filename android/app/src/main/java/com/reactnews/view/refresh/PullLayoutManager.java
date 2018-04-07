@@ -1,7 +1,6 @@
 package com.reactnews.view.refresh;
 
 import android.graphics.Color;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
@@ -101,9 +100,7 @@ public class PullLayoutManager extends ViewGroupManager<SmartRefreshLayout> {
     }
 
     @Override
-    public
-    @Nullable
-    Map getExportedCustomDirectEventTypeConstants() {
+    public @Nullable Map getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.of(
                 PullLayoutEvent.eventNameForType(PullLayoutEvent.ON_REFRESH_RELEASED),
                 MapBuilder.of("registrationName", "onRefresh"),

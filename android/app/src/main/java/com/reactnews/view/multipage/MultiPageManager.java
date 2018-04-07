@@ -2,20 +2,18 @@ package com.reactnews.view.multipage;
 
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.bumptech.glide.Glide;
-import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.reactnews.R;
 import com.zhy.adapter.recyclerview.CommonAdapter;
@@ -31,17 +29,15 @@ import javax.annotation.Nullable;
  * Created by hitomi on 2018/3/22.
  */
 
-public class MultiPage extends SimpleViewManager<MultiRecyclerView> {
+public class MultiPageManager extends SimpleViewManager<MultiRecyclerView> {
     public static final String TAG = "MultiPage";
     public static final int LOAD_MORE_DATA = 100;
 
-    private String key;
     private int contentSize;
     private List<Object> contentList;
 
     private List<Integer> imgList;
     private ImageAdapter adapter;
-
 
     {
         imgList = new ArrayList<>();
@@ -59,7 +55,7 @@ public class MultiPage extends SimpleViewManager<MultiRecyclerView> {
 
     @Override
     public String getName() {
-        return "MultiPage";
+        return TAG;
     }
 
     @Override
@@ -97,18 +93,20 @@ public class MultiPage extends SimpleViewManager<MultiRecyclerView> {
         view.setOnCenterItemClickListener(new MultiRecyclerView.OnCenterItemClickListener() {
             @Override
             public void onCenterItemClick(View v) {
-                dispatchEvent(reactContext, "onCenterItemClick", v.getTag().toString());
+                sendEvent(view, MultiPageEvent.ON_CLICK_CENTER, v.getTag().toString());
             }
         });
     }
 
-    @Nullable
     @Override
-    public Map getExportedCustomDirectEventTypeConstants() {
-        //第一个Login 注册的名字  第二个registrationName不可以改变 第三个js回调方法
-        return MapBuilder.<String, Object>builder()
-                .put("onCenterItemClick", MapBuilder.of("registrationName", "onCenterItemClick"))
-                .build();
+    public
+    @Nullable
+    Map getExportedCustomDirectEventTypeConstants() {
+        return MapBuilder.of(
+                MultiPageEvent.eventNameForType(MultiPageEvent.ON_SLIDE_CENTER),
+                MapBuilder.of("registrationName", "onSlideCenter"),
+                MultiPageEvent.eventNameForType(MultiPageEvent.ON_CLICK_CENTER),
+                MapBuilder.of("registrationName", "onClickCenter"));
     }
 
     @Nullable
@@ -121,39 +119,22 @@ public class MultiPage extends SimpleViewManager<MultiRecyclerView> {
     @Override
     public void receiveCommand(MultiRecyclerView root, int commandId, @Nullable ReadableArray args) {
         super.receiveCommand(root, commandId, args);
-        Log.i(TAG, args.getString(0));
-        String key = args.getString(0);
         switch (commandId) {
             case LOAD_MORE_DATA:
-                if (this.key.equals(key)) {
-
-                }
                 break;
         }
     }
 
-    private void dispatchEvent(ThemedReactContext reactContext, String eventName, String index) {
-        if (reactContext != null) {
-//            // native 发送事件到 js
-            WritableMap event = Arguments.createMap();
-            event.putString("from", "native");
-            event.putString("index", index);
-//            reactContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-//                    clickView.getId(),
-//                    "onCenterItemClick",
-//                    event);
-//            Log.i(TAG, "发送点击中间的 Item event");
-
-            reactContext
-                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit(this.key + eventName, event);
-            Log.d(TAG, this.key + "click center item");
-        }
+    private void sendEvent(MultiRecyclerView multiPage, int eventType, String index) {
+        ReactContext context = (ReactContext) multiPage.getContext();
+        UIManagerModule uiManagerModule = context.getNativeModule(UIManagerModule.class);
+        uiManagerModule.getEventDispatcher().dispatchEvent(
+                new MultiPageEvent(multiPage.getId(), eventType, index));
     }
 
-    @ReactProp(name = "Key")
-    public void setKey(final MultiRecyclerView refreshLayout, final String key) {
-        this.key = key;
+    private int dip2Px(Context context, float dpValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
     }
 
     @ReactProp(name = "ContentSize")
@@ -161,11 +142,6 @@ public class MultiPage extends SimpleViewManager<MultiRecyclerView> {
         this.contentSize = dip2Px(refreshLayout.getContext(), contentSize);
         adapter.notifyDataSetChanged();
         refreshLayout.scrollFirstPosition();
-    }
-
-    private int dip2Px(Context context, float dpValue) {
-        final float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (dpValue * scale + 0.5f);
     }
 
     @ReactProp(name = "ContentList")

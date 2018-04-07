@@ -4,6 +4,7 @@ import {
     StyleSheet,
     requireNativeComponent,
 } from 'react-native';
+import * as _ from "lodash";
 import PropTypes from 'prop-types';
 
 const ScaleType = {
@@ -28,25 +29,25 @@ class App extends Component {
 
     constructor(props) {
         super(props)
-        this.processAttr();
+        this.processAttr(props);
     }
 
-    processAttr() {
-        let source = resolveAssetSource(this.props.source);
-        let placeholder = resolveAssetSource(this.props.placeholder);
-        let errorImg = resolveAssetSource(this.props.errorImg);
+    processAttr(props) {
+        let source = resolveAssetSource(props.source);
+        let placeholder = resolveAssetSource(props.placeholder);
+        let errorImg = resolveAssetSource(props.errorImg);
 
         if (source && source.uri === '') {
             console.warn('source.uri should not be an empty string');
         }
 
-        if (this.props.src) {
+        if (props.src) {
             console.warn(
                 'The <GlideImage> component requires a `source` property.',
             );
         }
 
-        if (this.props.children) {
+        if (props.children) {
             throw new Error(
                 'The <GlideImage> component cannot contain children. If you want to render content on top of the image, consider using the <ImageBackground> component or absolute positioning.',
             );
@@ -54,12 +55,12 @@ class App extends Component {
 
         if (source && source.uri) {
             const {width, height} = source;
-            let style = flattenStyle([{width, height}, styles.base, this.props.style]);
+            let style = flattenStyle([{width, height}, styles.base, props.style]);
 
             let config = {
                 source: source,
-                scaleType: this.props.scaleType,
-                targetSize: this.props.targetSize,
+                scaleType: props.scaleType,
+                targetSize: props.targetSize,
             };
 
             if (placeholder && placeholder.uri) {
@@ -70,13 +71,20 @@ class App extends Component {
                 config.errorImg = errorImg;
             }
 
-            this.attr = merge(this.props, {
+            this.attr = merge(props, {
                 style,
                 glideConfig: config,
             });
         }
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        if (!_.isEqual(nextProps.source, this.props.source)) {
+            this.processAttr(nextProps);
+            return true;
+        }
+        return false;
+    }
 
     render() {
         return <GlideImage

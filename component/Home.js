@@ -14,6 +14,7 @@ import {
     GankType
 } from './util/Cons'
 import TitleBar from './widget/TitleBar'
+import {GlideImage, ScaleType} from './widget/GlideImage'
 
 const width = Dimensions.get('window').width;
 
@@ -54,7 +55,14 @@ class Home extends Component {
                 navigate("GankDetails", {details: this.state.girlImg});
             }}>
                 <Text style={styles.section}>{this.state.girlImg.type}</Text>
-                <Image source={{uri: `${this.state.girlImg.url}`}} style={styles.girlImage}/>
+
+                <GlideImage
+                    style={styles.girlImage}
+                    source={{uri: this.state.girlImg.url}}
+                    scaleType={ScaleType.CENTER_CROP}
+                />
+
+
             </TouchableOpacity>
         </View>);
     }
@@ -85,7 +93,10 @@ class Home extends Component {
                 <Text style={styles.contentAuthor}>—— {item.item.who == null ? 'none' : item.item.who}</Text>
                 {
                     item.item.images != null
-                        ? <Image source={{uri: `${item.item.images[0]}`}} style={styles.contentImg}/>
+                        ? <GlideImage
+                            source={{uri: item.item.images[0]}}
+                            style={styles.contentImg}
+                        />
                         : null
                 }
             </TouchableOpacity>

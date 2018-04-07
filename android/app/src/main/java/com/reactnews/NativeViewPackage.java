@@ -5,7 +5,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
 import com.reactnews.view.image.GlideImageManager;
 import com.reactnews.view.multipage.MultiPage;
-import com.reactnews.view.refresh.PullLayout;
+import com.reactnews.view.refresh.PullLayoutManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ public class NativeViewPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         List<ViewManager> views = new ArrayList<>();
-        views.add(new PullLayout());
+        views.add(new PullLayoutManager());
         views.add(new MultiPage());
         views.add(new GlideImageManager());
         return views;

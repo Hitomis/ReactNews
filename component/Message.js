@@ -57,12 +57,14 @@ class Message extends Component {
                 ContentSize={typeImgSize}
             />
             <Pulllayout
-                Key={this.KEY}
                 ref={(pull) => {
                     this.pullLayout = pull
                 }}
                 EnableRefresh={false}
-                EnableLoadMore={true}>
+                EnableLoadMore={true}
+                onLoadmore={() => {
+                    this.loadMoreReleased();
+                }}>
 
                 <FlatList
                     data={this.state.typeResult}
@@ -77,7 +79,6 @@ class Message extends Component {
 
     componentDidMount() {
         DeviceEventEmitter.addListener(this.KEY + "onCenterItemClick", this.onCenterItemClick);
-        DeviceEventEmitter.addListener(this.KEY + "onLoadMoreReleased", this.loadMoreReleased);
         this.getGanDataFromServer();
     }
 
@@ -103,7 +104,7 @@ class Message extends Component {
                         typeResult: [...this.state.typeResult, ...resultData],
                     });
                 }
-                this.pullLayout && this.pullLayout.finishLoadMore(this.KEY);
+                this.pullLayout && this.pullLayout.finishLoadMore();
             })
     };
 

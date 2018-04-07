@@ -17,16 +17,14 @@ export default class App extends Component {
     }
 
     //数据获取后回调 刷新结束
-    finishRefresh = (key) => {
-        console.log("结束下拉" + key);
+    finishRefresh = () => {
         UIManager.dispatchViewManagerCommand(ReactNative.findNodeHandle(this),
-            UIManager.PullLayout.Commands.FinishRefresh, [key])
+            UIManager.PullLayout.Commands.FinishRefresh, [])
     };
 
-    finishLoadMore = (key) => {
-        console.log("结束上拉" + key);
+    finishLoadMore = () => {
         UIManager.dispatchViewManagerCommand(ReactNative.findNodeHandle(this),
-            UIManager.PullLayout.Commands.FinishLoadMore, [key])
+            UIManager.PullLayout.Commands.FinishLoadMore, [])
     }
 
 
@@ -61,8 +59,8 @@ const styles = StyleSheet.create({
 PullLayout.propTypes = {
     ...View.propTypes,
     Key: PropTypes.string.isRequired,//必须 否则监听回调可能无法被调用
-    onRefreshReleased: PropTypes.func,//下拉刷新回调，使用 DeviceEventEmitter 添加
-    onLoadMoreReleased: PropTypes.func,//上拉加载回调，使用 DeviceEventEmitter 添加
+    onRefresh: PropTypes.func,//下拉刷新回调
+    onLoadmore: PropTypes.func,//上拉加载回调
     EnableOverScrollDrag: PropTypes.bool,//设置是否启用越界拖动（仿苹果效果）
     EnableOverScrollBounce: PropTypes.bool,//设置是否启用越界回弹
     DragRate: PropTypes.number, //显示拖动高度/真实拖动高度（默认0.5，阻尼效果）

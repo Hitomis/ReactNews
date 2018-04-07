@@ -8,7 +8,6 @@ import {
     TextInput,
     TouchableOpacity,
     ToastAndroid,
-    DeviceEventEmitter
 } from 'react-native';
 import TitleBar from './widget/TitleBar'
 import PullLayout from './widget/PullLayout'
@@ -39,16 +38,6 @@ class Find extends Component {
             searchResult: [],
             searchBorder: '#aeb0bf'
         };
-        this.KEY = "gank_find";
-    }
-
-    componentDidMount() {
-        DeviceEventEmitter.addListener(this.KEY + "onLoadMoreReleased", this.loadMoreReleased);
-    }
-
-    componentWillUnmount() {
-        DeviceEventEmitter.removeAllListeners();
-        this.pullLayout && this.pullLayout.finishRefresh(this.KEY);
     }
 
     render() {
@@ -95,12 +84,14 @@ class Find extends Component {
                 />
             </View>
             <PullLayout
-                Key={this.KEY}
                 ref={(pull) => {
                     this.pullLayout = pull
                 }}
                 EnableRefresh={false}
                 EnableLoadMore={true}
+                onLoadmore={() => {
+                    this.loadMoreReleased();
+                }}
             >
                 <FlatList
                     data={this.state.searchResult}
@@ -152,7 +143,7 @@ class Find extends Component {
                         searchResult: [...this.state.searchResult, ...resultData]
                     })
                 }
-                this.pullLayout && this.pullLayout.finishLoadMore(this.KEY);
+                this.pullLayout && this.pullLayout.finishLoadMore();
             })
     };
 

@@ -5,13 +5,11 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
-import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.ViewGroupManager;
 import com.facebook.react.uimanager.annotations.ReactProp;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
@@ -19,26 +17,22 @@ import com.scwang.smartrefresh.layout.footer.ClassicsFooter;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
+public class PullLayoutManager extends ViewGroupManager<SmartRefreshLayout> {
 
     private static final String TAG = "PullLayout";
     private static final int FinishRefresh = 1;
     private static final int FinishLoadMore = 1 << 1;
 
     private Header header;
-    private Map<SmartRefreshLayout, String> keyMap = new HashMap<>();
-    private boolean canRefresh = true;
-    private boolean canLoad = true;
     private int requestTimeOut = 8000;
 
     @Override
     public String getName() {
-        return "PullLayout";
+        return TAG;
     }
 
     @Override
@@ -73,72 +67,48 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
         view.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
-                refresh(reactContext, view);
+                refresh(view);
             }
         });
         view.setOnLoadmoreListener(new OnLoadmoreListener() {
             @Override
             public void onLoadmore(RefreshLayout refreshlayout) {
-                loadMore(reactContext, view);
+                loadMore(view);
             }
         });
     }
 
     //发送给RN刷新事件 加载数据
-    private void refresh(ThemedReactContext reactContext, SmartRefreshLayout refreshLayout) {
-        if (reactContext != null) {
-            WritableMap params = Arguments.createMap();
-            params.putString("from", "native");
-            Log.i(TAG, "开始刷新");
-            if (canRefresh) {
-                canRefresh = false;
-                this.dispatchEvent(reactContext, refreshLayout, "onRefreshReleased", params, false);
-            }
+    private void refresh(SmartRefreshLayout refreshLayout) {
+        if (refreshLayout != null) {
+            Log.i(TAG, refreshLayout + "开始刷新");
+            sendEvent(refreshLayout, PullLayoutEvent.ON_REFRESH_RELEASED, null);
         }
     }
 
-    private void loadMore(ThemedReactContext reactContext, SmartRefreshLayout refreshLayout) {
-        if (reactContext != null) {
-            WritableMap params = Arguments.createMap();
-            params.putString("from", "native");
-            Log.i(TAG, "开始加载");
-            if (canLoad) {
-                canLoad = false;
-                this.dispatchEvent(reactContext, refreshLayout, "onLoadMoreReleased", params, true);
-            }
+    private void loadMore(SmartRefreshLayout refreshLayout) {
+        if (refreshLayout != null) {
+            Log.i(TAG, refreshLayout + "开始加载");
+            sendEvent(refreshLayout, PullLayoutEvent.ON_LOADMORE_RELEASED, null);
         }
     }
 
-    private void dispatchEvent(final ReactContext reactContext,
-                               final SmartRefreshLayout refreshlayout,
-                               final String eventName,
-                               @android.support.annotation.Nullable final WritableMap params,
-                               boolean refresh) {
-        if (reactContext == null) {
-            Log.i(TAG, "reactContext==null");
-            if (refresh)
-                refreshlayout.finishRefresh();
-            else
-                refreshlayout.finishLoadmore();
-        } else {
-            String key = keyMap.get(refreshlayout);
-            Log.i(TAG, "发送消息事件 " + "id: " + refreshlayout.getId() + " | key: " + key + eventName);
-            // 原生模块发送事件
-            reactContext
-                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit(key + eventName, params);
-            new Handler().postDelayed(new FinishRequestRunnable(refreshlayout), requestTimeOut);
-        }
+    private void sendEvent(final SmartRefreshLayout smartRefreshLayout, int eventType, String eventMsg) {
+        ReactContext context = (ReactContext) smartRefreshLayout.getContext();
+        UIManagerModule uiManagerModule = context.getNativeModule(UIManagerModule.class);
+        uiManagerModule.getEventDispatcher().dispatchEvent(
+                new PullLayoutEvent(smartRefreshLayout.getId(), eventType, eventMsg));
     }
 
-    @Nullable
     @Override
-    public Map getExportedCustomDirectEventTypeConstants() {
-        //第一个Login 注册的名字  第二个registrationName不可以改变 第三个js回调方法
-        return MapBuilder.<String, Object>builder()
-                .put("onRefreshReleased", MapBuilder.of("registrationName", "onRefreshReleased"))
-                .put("onLoadMoreReleased", MapBuilder.of("registrationName", "onLoadMoreReleased"))
-                .build();
+    public
+    @Nullable
+    Map getExportedCustomDirectEventTypeConstants() {
+        return MapBuilder.of(
+                PullLayoutEvent.eventNameForType(PullLayoutEvent.ON_REFRESH_RELEASED),
+                MapBuilder.of("registrationName", "onRefresh"),
+                PullLayoutEvent.eventNameForType(PullLayoutEvent.ON_LOADMORE_RELEASED),
+                MapBuilder.of("registrationName", "onLoadmore"));
     }
 
 
@@ -153,29 +123,16 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
     @Override
     public void receiveCommand(SmartRefreshLayout root, int commandId, @Nullable ReadableArray args) {
         super.receiveCommand(root, commandId, args);
-        String key = args.getString(0);
-        String viewKey = keyMap.get(root);
         switch (commandId) {
             case FinishRefresh:
-                if (viewKey.equals(key)) {
-                    Log.i(TAG, "结束刷新");
-                    root.finishRefresh();
-                    canRefresh = true;
-                }
+                Log.i(TAG, root + "结束刷新");
+                root.finishRefresh();
                 break;
             case FinishLoadMore:
-                if (viewKey.equals(key)) {
-                    Log.i(TAG, key + "结束加载");
-                    root.finishLoadmore();
-                    canLoad = true;
-                }
+                Log.i(TAG, root + "结束加载");
+                root.finishLoadmore();
                 break;
         }
-    }
-
-    @ReactProp(name = "Key")
-    public void setKey(final SmartRefreshLayout refreshLayout, final String Key) {
-        keyMap.put(refreshLayout, Key);
     }
 
     @ReactProp(name = "HeaderText")
@@ -285,26 +242,5 @@ public class PullLayout extends ViewGroupManager<SmartRefreshLayout> {
     @ReactProp(name = "RequestTimeOut")
     public void setRequestTimeOut(final SmartRefreshLayout refreshLayout, final int requestTimeOut) {
         this.requestTimeOut = requestTimeOut;
-    }
-
-    private class FinishRequestRunnable implements Runnable {
-
-        private SmartRefreshLayout refreshLayout;
-
-        public FinishRequestRunnable(SmartRefreshLayout refreshlayout) {
-            this.refreshLayout = refreshlayout;
-        }
-
-        @Override
-        public void run() {
-            if (refreshLayout.isRefreshing()) {
-                Log.i(TAG, "请求超时，自动结束下拉刷新");
-                refreshLayout.finishRefresh();
-            }
-            if (refreshLayout.isLoading()) {
-                Log.i(TAG, "请求超时，自动结束上拉加载");
-                refreshLayout.finishLoadmore();
-            }
-        }
     }
 }

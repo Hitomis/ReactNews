@@ -82,7 +82,6 @@ class Message extends Component {
 
 
     onCenterItemClick = (event) => {
-        console.log(this.props);
         this.gankType = getTypeValueByIndex(parseInt(event.msg));
         this.currPage = 1;
         this.getGankDataFromServer();

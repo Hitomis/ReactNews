@@ -59,6 +59,8 @@ class Home extends Component {
                 <GlideImage
                     style={styles.girlImage}
                     source={{uri: this.state.girlImg.url}}
+                    placeholder={require('./assets/img/img_placeholder.png')}
+                    errorImg={require('./assets/img/img_placeholder.png')}
                     scaleType={ScaleType.CENTER_CROP}
                 />
 
@@ -96,6 +98,8 @@ class Home extends Component {
                         ? <GlideImage
                             source={{uri: item.item.images[0]}}
                             style={styles.contentImg}
+                            placeholder={require('./assets/img/img_placeholder.png')}
+                            errorImg={require('./assets/img/img_placeholder.png')}
                         />
                         : null
                 }

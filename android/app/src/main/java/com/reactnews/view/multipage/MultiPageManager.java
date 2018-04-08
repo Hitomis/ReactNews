@@ -93,7 +93,7 @@ public class MultiPageManager extends SimpleViewManager<MultiRecyclerView> {
         view.setOnCenterItemClickListener(new MultiRecyclerView.OnCenterItemClickListener() {
             @Override
             public void onCenterItemClick(View v) {
-                sendEvent(view, MultiPageEvent.ON_CLICK_CENTER, v.getTag().toString());
+                sendEvent(view, MultiPageEvent.ON_CLICK_CENTER, Integer.parseInt(v.getTag().toString()));
             }
         });
     }
@@ -125,7 +125,7 @@ public class MultiPageManager extends SimpleViewManager<MultiRecyclerView> {
         }
     }
 
-    private void sendEvent(MultiRecyclerView multiPage, int eventType, String index) {
+    private void sendEvent(MultiRecyclerView multiPage, int eventType, int index) {
         ReactContext context = (ReactContext) multiPage.getContext();
         UIManagerModule uiManagerModule = context.getNativeModule(UIManagerModule.class);
         uiManagerModule.getEventDispatcher().dispatchEvent(

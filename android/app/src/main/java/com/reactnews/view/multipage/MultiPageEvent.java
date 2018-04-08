@@ -16,7 +16,7 @@ public class MultiPageEvent extends Event<MultiPageEvent> {
     public static final int ON_CLICK_CENTER = 1 << 1;
 
     private int eventType;
-    private String eventMsg;
+    private int centerIndex;
 
     public static String eventNameForType(int eventType) {
         switch (eventType) {
@@ -30,13 +30,13 @@ public class MultiPageEvent extends Event<MultiPageEvent> {
     }
 
     public MultiPageEvent(int viewId, int eventType) {
-        this(viewId, eventType, null);
+        this(viewId, eventType, 0);
     }
 
-    public MultiPageEvent(int viewId, int eventType, @Nullable String eventMsg) {
+    public MultiPageEvent(int viewId, int eventType, @Nullable int centerIndex) {
         super(viewId);
         this.eventType = eventType;
-        this.eventMsg = eventMsg;
+        this.centerIndex = centerIndex;
     }
 
     @Override
@@ -46,11 +46,8 @@ public class MultiPageEvent extends Event<MultiPageEvent> {
 
     @Override
     public void dispatch(RCTEventEmitter rctEventEmitter) {
-        WritableMap eventData = null;
-        if (eventMsg != null) {
-            eventData = Arguments.createMap();
-            eventData.putString("msg", eventMsg);
-        }
+        WritableMap eventData = Arguments.createMap();
+        eventData.putInt("index", centerIndex);
         rctEventEmitter.receiveEvent(getViewTag(), getEventName(), eventData);
     }
 }

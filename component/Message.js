@@ -82,7 +82,7 @@ class Message extends Component {
 
 
     onCenterItemClick = (event) => {
-        this.gankType = getTypeValueByIndex(parseInt(event.msg));
+        this.gankType = getTypeValueByIndex(parseInt(event.index));
         this.currPage = 1;
         this.getGankDataFromServer();
     }
@@ -113,8 +113,8 @@ class Message extends Component {
                 style={styles.girlImage}
                 source={{uri: item.item.url}}
                 scaleType={ScaleType.CENTER_CROP}
-                placeholder={require('./assets/tab/tabbar_message_center.png')}
-                errorImg={require('./assets/tab/tabbar_message_center_highlighted.png')}
+                placeholder={require('./assets/img/img_placeholder.png')}
+                errorImg={require('./assets/img/img_placeholder.png')}
             />
         } else {
             return <TouchableOpacity

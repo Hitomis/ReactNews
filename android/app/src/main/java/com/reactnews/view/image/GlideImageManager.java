@@ -1,14 +1,15 @@
 package com.reactnews.view.image;
 
 import android.content.Context;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
-import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -35,7 +36,10 @@ public class GlideImageManager extends SimpleViewManager<GlideImageLayout> {
     private static final String KEY_ERROR_IMG = "errorImg";
     private static final String KEY_PLACE_HOLDER = "placeholder";
     private static final String KEY_SCALE_TYPE = "scaleType";
+    private static final String KEY_PLACE_HOLDER_SCALE_TYPE = "placeholderScaleType";
+    private static final String KEY_ERROR_IMG_SCALE_TYPE = "errorImgScaleType";
     private static final String KEY_TARGET_SIZE = "targetSize";
+    private static final String KEY_CIRCLE_CROP = "circleCrop";
 
     @Override
     public String getName() {
@@ -81,44 +85,59 @@ public class GlideImageManager extends SimpleViewManager<GlideImageLayout> {
         uiManagerModule.getEventDispatcher().dispatchEvent(
                 new GlideImageEvent(imageLayout.getId(), eventType, eventMsg));
     }
-
-    private void assignTargetSize(Context context, ReadableMap sourceMap, DrawableRequestBuilder requestBuilder) {
+    private void assignTargetSize(Context context, ReadableMap sourceMap, RequestOptions options) {
         if (sourceMap.hasKey(KEY_WIDTH) && sourceMap.hasKey(KEY_HEIGHT)) {
             // 静态资源，按静态图片默认大小指定图片尺寸
-            requestBuilder.override(
+            options.override(
                     dip2Px(context, sourceMap.getInt(KEY_WIDTH)),
                     dip2Px(context, sourceMap.getInt(KEY_HEIGHT))
             );
         }
     }
 
+    private Object getGlideModel(Context context, String source) {
+        ImageSource imageSource = new ImageSource(context, source);
+        Object model;
+        if (imageSource.isResource()) { // 本地资源
+            try {
+                model = Integer.parseInt(imageSource.getUri().getPath().substring(1));
+            } catch (Exception e) {
+                model = "";
+            }
+        } else {
+            model = imageSource.getUri();
+        }
+        return model;
+    }
+
+    private void processOuterImage(ImageView outerImg, ReadableMap glideConfig, String sourceKey, String scaleTypeKey) {
+        if (glideConfig.hasKey(scaleTypeKey)) { // 指定缩放模式
+            outerImg.setScaleType(getScaleType(glideConfig.getInt(scaleTypeKey)));
+        }
+
+        ReadableMap placeholderMap = glideConfig.getMap(sourceKey);
+        Context context = outerImg.getContext();
+
+        RequestOptions options = new RequestOptions();
+        assignTargetSize(context, placeholderMap, options);
+
+        Glide.with(context)
+                .applyDefaultRequestOptions( new RequestOptions()
+                        .format(DecodeFormat.PREFER_RGB_565))
+                .load(getGlideModel(context, placeholderMap.getString("uri")))
+                .apply(options)
+                .into(outerImg);
+    }
+
     private void processPlaceholder(GlideImageLayout imageLayout, ReadableMap glideConfig) {
         if (glideConfig.hasKey(KEY_PLACE_HOLDER)) {
-            ImageView outerImg = imageLayout.preShowPlaceHolder();
-            ReadableMap placeholderMap = glideConfig.getMap(KEY_PLACE_HOLDER);
-            Context context = outerImg.getContext();
-
-            DrawableRequestBuilder requestBuilder =
-                    Glide.with(context)
-                            .load(placeholderMap.getString("uri"))
-                            .dontAnimate();
-            assignTargetSize(context, placeholderMap, requestBuilder);
-            requestBuilder.into(outerImg);
+            processOuterImage(imageLayout.preShowPlaceHolder(), glideConfig, KEY_PLACE_HOLDER, KEY_PLACE_HOLDER_SCALE_TYPE);
         }
     }
 
-    private void processErrorImg(GlideImageLayout imageLayout, ReadableMap glideConfig) {
+    private void processErrorImage(GlideImageLayout imageLayout, ReadableMap glideConfig) {
         if (glideConfig.hasKey(KEY_ERROR_IMG)) {
-            ImageView outerImg = imageLayout.showOuterImg();
-            ReadableMap errorImgMap = glideConfig.getMap(KEY_ERROR_IMG);
-            Context context = outerImg.getContext();
-
-            DrawableRequestBuilder requestBuilder =
-                    Glide.with(context)
-                            .load(errorImgMap.getString("uri"))
-                            .dontAnimate();
-            assignTargetSize(context, errorImgMap, requestBuilder);
-            requestBuilder.into(outerImg);
+            processOuterImage(imageLayout.showOuterImg(), glideConfig, KEY_ERROR_IMG, KEY_ERROR_IMG_SCALE_TYPE);
         }
     }
 
@@ -134,26 +153,30 @@ public class GlideImageManager extends SimpleViewManager<GlideImageLayout> {
         if (glideConfig.hasKey(KEY_SOURCE)) {
             Context context = innerImg.getContext();
             ReadableMap sourceMap = glideConfig.getMap(KEY_SOURCE);
-            String uri = sourceMap.getString("uri");
+            String source = sourceMap.getString("uri");
 
-            DrawableRequestBuilder requestBuilder =
-                    Glide.with(context)
-                            .load(new ImageSource(context, uri).getUri())
-                            .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                            .crossFade()
-                            .listener(new ImageLoaderListener(imageLayout, glideConfig));
+            RequestOptions options = new RequestOptions();
+            assignTargetSize(context, sourceMap, options);
 
-            assignTargetSize(context, sourceMap, requestBuilder);
+            if (glideConfig.hasKey(KEY_CIRCLE_CROP) && glideConfig.getBoolean(KEY_CIRCLE_CROP)) { // 裁剪为圆形图片
+                options.circleCrop();
+            }
 
             if (glideConfig.hasKey(KEY_TARGET_SIZE)) { // 显示指定图片大小
                 ReadableArray sizeArray = glideConfig.getArray(KEY_TARGET_SIZE);
-                requestBuilder.override(
+                options.override(
                         dip2Px(context, sizeArray.getInt(0)),
                         dip2Px(context, sizeArray.getInt(1)));
             }
 
-            requestBuilder.into(innerImg);
-            sendEvent(imageLayout, GlideImageEvent.ON_LOAD_START, uri);
+            Glide.with(context)
+                    .applyDefaultRequestOptions( new RequestOptions()
+                            .format(DecodeFormat.PREFER_RGB_565))
+                    .load(getGlideModel(context, source))
+                    .apply(options)
+                    .listener(new ImageLoaderListener(imageLayout, glideConfig))
+                    .into(innerImg);
+            sendEvent(imageLayout, GlideImageEvent.ON_LOAD_START, source);
         }
     }
 
@@ -168,7 +191,7 @@ public class GlideImageManager extends SimpleViewManager<GlideImageLayout> {
                 MapBuilder.of("registrationName", "onLoadEnd"));
     }
 
-    private class ImageLoaderListener implements RequestListener<Uri, GlideDrawable> {
+    private class ImageLoaderListener implements RequestListener<Drawable> {
 
         private GlideImageLayout imageLayout;
         private ReadableMap glideConfig;
@@ -179,14 +202,14 @@ public class GlideImageManager extends SimpleViewManager<GlideImageLayout> {
         }
 
         @Override
-        public boolean onException(Exception e, Uri model, Target<GlideDrawable> target, boolean isFirstResource) {
-            processErrorImg(imageLayout, glideConfig);
+        public boolean onLoadFailed(@android.support.annotation.Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+            processErrorImage(imageLayout, glideConfig);
             sendEvent(imageLayout, GlideImageEvent.ON_ERROR, e.getMessage());
             return false;
         }
 
         @Override
-        public boolean onResourceReady(GlideDrawable resource, Uri model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
             imageLayout.showInnerImg();
             sendEvent(imageLayout, GlideImageEvent.ON_LOAD_END, null);
             return false;

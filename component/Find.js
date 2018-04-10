@@ -136,7 +136,7 @@ class Find extends Component {
         this.searchKeyword()
             .then((resultData) => {
                 console.log('find load more', resultData);
-                if (resultData === undefined || resultData.length == 0) {
+                if (resultData === undefined || resultData.length === 0) {
                     ToastAndroid.show('没有更多的信息了', ToastAndroid.SHORT);
                 } else {
                     this.setState({
@@ -144,6 +144,9 @@ class Find extends Component {
                     })
                 }
                 this.pullLayout && this.pullLayout.finishLoadMore();
+            }, (error)=> {
+                console.log("loadMore.....", error);
+                this.pullLayout.finishLoadMore();
             })
     };
 

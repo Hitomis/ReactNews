@@ -6,6 +6,7 @@ import {
     Image
 } from 'react-native';
 import TitleBar from './widget/TitleBar'
+import {GlideImage, ScaleType} from "./widget/GlideImage";
 
 class Mine extends Component {
     static navigationOptions = ({navigation}) => {
@@ -30,6 +31,13 @@ class Mine extends Component {
     render() {
         return <View style={styles.container}>
             <TitleBar title={'我的'}/>
+            <Image
+                style={{width: 300, height: 180, resizeMode: 'contain'}}
+                source={{uri: 'http://7xi8d6.com1.z0.glb.clouddn.com/20180102083655_3t4ytm_Screenshot.jpeg'}}/>
+            <GlideImage
+                style={{width: 300, height: 180,}}
+                scaleType={ScaleType.CENTER_INSIDE}
+                source={{uri: 'http://7xi8d6.com1.z0.glb.clouddn.com/20180102083655_3t4ytm_Screenshot.jpeg'}}/>
         </View>
     }
 

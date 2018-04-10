@@ -8,13 +8,13 @@ import * as _ from "lodash";
 import PropTypes from 'prop-types';
 
 const ScaleType = {
-    CENTER: 1,
-    CENTER_CROP: 2,
-    CENTER_INSIDE: 3,
-    FIT_CENTER: 4,
+    CENTER: 1,         // 图片居中显示
+    CENTER_CROP: 2,    // 对应 默认(cover)
+    CENTER_INSIDE: 3,  // 对应 contain(center)
+    FIT_CENTER: 4,     // 对应 contain(center)
     FIT_END: 5,
     FIT_START: 6,
-    FIT_XY: 7,
+    FIT_XY: 7,         // 对应 stretch
     MATRIX: 8
 };
 
@@ -59,7 +59,10 @@ class App extends Component {
 
             let config = {
                 source: source,
-                scaleType: props.scaleType,
+                scaleType: props.scaleType ? props.scaleType : ScaleType.CENTER_CROP,
+                placeholderScaleType: props.placeholderScaleType ? props.placeholderScaleType : ScaleType.CENTER_CROP,
+                errorImgScaleType: props.errorImgScaleType ? props.errorImgScaleType : ScaleType.CENTER_CROP,
+                circleCrop: props.circleCrop,
                 targetSize: props.targetSize,
             };
 
@@ -103,18 +106,25 @@ const styles = StyleSheet.create({
 });
 
 /**
- Boolean -> Bool
+ Boolean -> Boolean
  Integer -> Number
  Double -> Number
  Float -> Number
  String -> String
- Callback -> function
+ Callback -> func
  ReadableMap -> Object
  ReadableArray -> Array
  */
 GlideImage.propTypes = {
     ...View.propTypes,
-    glideConfig: PropTypes.Object,//必须
+    source: PropTypes.Object,
+    placeholder: PropTypes.Object,
+    errorImg: PropTypes.Object,
+    scaleType: PropTypes.number,
+    placeholderScaleType: PropTypes.number,
+    errorImgScaleType: PropTypes.number,
+    circleCrop: PropTypes.Boolean,
+    targetSize: PropTypes.Array,
     onLoadStart: PropTypes.func,
     onLoadEnd: PropTypes.func,
     onError: PropTypes.func,

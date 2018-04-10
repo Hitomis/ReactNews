@@ -100,6 +100,8 @@ class Message extends Component {
                     });
                 }
                 this.pullLayout && this.pullLayout.finishLoadMore();
+            }, (error) => {
+                this.pullLayout.finishLoadMore();
             })
     };
 
